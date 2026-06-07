@@ -1,0 +1,199 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Clinic Prescription Coordination Platform
+
+# DELETION POLICY: No DELETE API endpoints exist in this system.
+# Records are never deleted by application workflow.
+# Although some SAM managed policies include DeleteItem permissions,
+# the application design prohibits record deletion and no Lambda
+# implements deletion logic.
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    MemorySize: 256
+    Timeout: 10
+    Environment:
+      Variables:
+        PATIENTS_TABLE: !Ref PatientsTable
+        PRESCRIPTIONS_TABLE: !Ref PrescriptionsTable
+
+Resources:
+
+  # ── DynamoDB Tables ────────────────────────────────────────────
+
+  PatientsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ClinicPatients
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: patient_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: patient_id
+          KeyType: HASH
+
+  PrescriptionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ClinicPrescriptions
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: prescription_id
+          AttributeType: S
+        - AttributeName: patient_id
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+        - AttributeName: created_at
+          AttributeType: S
+      KeySchema:
+        - AttributeName: prescription_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: PatientIndex
+          KeySchema:
+            - AttributeName: patient_id
+              KeyType: HASH
+            - AttributeName: created_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: StatusIndex
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: created_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  # ── API Gateway ────────────────────────────────────────────────
+
+  ClinicApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: clinic-api
+      StageName: dev
+      Cors:
+        AllowOrigin: "'*'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowMethods: "'GET,POST,PATCH,OPTIONS'"
+
+  # ── Lambda Functions ───────────────────────────────────────────
+
+  CreatePatientFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/createPatient/
+      Handler: index.handler
+      Events:
+        CreatePatient:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClinicApi
+            Path: /patients
+            Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PatientsTable
+
+  GetPatientFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/getPatient/
+      Handler: index.handler
+      Events:
+        GetPatient:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClinicApi
+            Path: /patients/{id}
+            Method: GET
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref PatientsTable
+
+  CreatePrescriptionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/createPrescription/
+      Handler: index.handler
+      Events:
+        CreatePrescription:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClinicApi
+            Path: /prescriptions
+            Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PrescriptionsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PatientsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:TransactWriteItems
+              Resource:
+                - !GetAtt PrescriptionsTable.Arn
+                - !GetAtt PatientsTable.Arn
+
+  GetPrescriptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/getPrescriptions/
+      Handler: index.handler
+      Events:
+        GetPrescriptionsByPatient:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClinicApi
+            Path: /prescriptions/patient/{patient_id}
+            Method: GET
+        GetPrescriptionsByStatus:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClinicApi
+            Path: /prescriptions
+            Method: GET
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref PrescriptionsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+              Resource:
+                - !Sub "${PrescriptionsTable.Arn}/index/PatientIndex"
+                - !Sub "${PrescriptionsTable.Arn}/index/StatusIndex"
+
+  MarkDispensedFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/markDispensed/
+      Handler: index.handler
+      Events:
+        MarkDispensed:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClinicApi
+            Path: /prescriptions/{prescription_id}
+            Method: PATCH
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PrescriptionsTable
+
+# ── Outputs ──────────────────────────────────────────────────────
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL for dev stage
+    Value: !Sub "https://${ClinicApi}.execute-api.${AWS::Region}.amazonaws.com/dev"
+  PatientsTableName:
+    Description: DynamoDB Patients table name
+    Value: !Ref PatientsTable
+  PrescriptionsTableName:
+    Description: DynamoDB Prescriptions table name
+    Value: !Ref PrescriptionsTable

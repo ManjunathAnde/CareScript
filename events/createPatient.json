@@ -1,0 +1,9 @@
+{
+  "httpMethod": "POST",
+  "path": "/patients",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"name\":\"Ravi Kumar\",\"age\":54,\"gender\":\"Male\"}",
+  "isBase64Encoded": false
+}
