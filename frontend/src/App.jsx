@@ -1,19 +1,27 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   ChevronDown,
   Check,
   ClipboardPlus,
+  Eye,
+  EyeOff,
   FileText,
   Home,
+  Lock,
+  LogIn,
+  LogOut,
   PackagePlus,
   Plus,
   Search,
   Save,
+  Stethoscope,
   Trash2,
   User,
   UserPlus,
   Users,
 } from 'lucide-react';
+
+const logoutRef = { current: null };
 
 const navItems = [
   { label: 'Dashboard', icon: Home, active: true, href: '/' },
@@ -59,6 +67,14 @@ function Sidebar() {
             <span className="online-dot" />
             <span>Online</span>
           </div>
+          <button
+            className="sidebar-logout"
+            type="button"
+            onClick={() => logoutRef.current?.()}
+          >
+            <LogOut size={14} strokeWidth={2.3} />
+            <span>Sign Out</span>
+          </button>
         </div>
       </div>
     </aside>
@@ -741,7 +757,202 @@ function ExistingPatientPage() {
   );
 }
 
+function LoginScreen({ onLogin }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [selectedRole, setSelectedRole] = useState('doctor');
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const canSubmit = username.trim() !== '' && password.trim() !== '';
+
+  const handleSignIn = () => {
+    setError(null);
+    setLoading(true);
+
+    if (selectedRole === 'doctor' && username === 'doctor' && password === 'carescript123') {
+      onLogin('doctor');
+    } else if (selectedRole === 'pharmacy' && username === 'pharmacy' && password === 'carescript456') {
+      onLogin('pharmacy');
+    } else {
+      setError('Invalid username or password.');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="login-shell">
+      <div className="login-card">
+        <div className="login-form-panel">
+          <div className="login-logo">
+            <Logo />
+          </div>
+
+          <h2 className="login-heading">Welcome back</h2>
+          <p className="login-subheading">Sign in to access your portal</p>
+
+          <div className="login-fields">
+            <label className="form-field">
+              <span>Username</span>
+              <div className="login-input-wrap">
+                <User size={16} strokeWidth={2.2} className="login-input-icon-left" />
+                <input
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => { setError(null); setUsername(e.target.value); }}
+                />
+              </div>
+            </label>
+
+            <label className="form-field">
+              <span>Password</span>
+              <div className="login-input-wrap login-input-has-right-icon">
+                <Lock size={16} strokeWidth={2.2} className="login-input-icon-left" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => { setError(null); setPassword(e.target.value); }}
+                />
+                <button
+                  type="button"
+                  className="login-eye"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={16} strokeWidth={2.2} /> : <Eye size={16} strokeWidth={2.2} />}
+                </button>
+              </div>
+            </label>
+
+            <div>
+              <span className="login-role-label">Sign in as</span>
+              <div className="role-cards">
+                <button
+                  type="button"
+                  className={`role-card ${selectedRole === 'doctor' ? 'selected' : ''}`}
+                  onClick={() => { setError(null); setSelectedRole('doctor'); }}
+                >
+                  <div className="role-radio">
+                    {selectedRole === 'doctor' && <span className="role-radio-dot" />}
+                  </div>
+                  <Stethoscope size={28} strokeWidth={2} className="role-icon-violet" />
+                  <strong>Doctor Portal</strong>
+                  <span>Access patient records and manage prescriptions</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`role-card ${selectedRole === 'pharmacy' ? 'selected' : ''}`}
+                  onClick={() => { setError(null); setSelectedRole('pharmacy'); }}
+                >
+                  <div className="role-radio">
+                    {selectedRole === 'pharmacy' && <span className="role-radio-dot" />}
+                  </div>
+                  <PackagePlus size={28} strokeWidth={2} className="role-icon-teal" />
+                  <strong>Pharmacy Portal</strong>
+                  <span>View and manage prescription requests</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {error && <p className="form-error">{error}</p>}
+
+          <button
+            className="wide-button purple login-submit"
+            type="button"
+            onClick={handleSignIn}
+            disabled={!canSubmit || loading}
+          >
+            <LogIn size={18} strokeWidth={2.2} />
+            <span>{loading ? 'Signing in…' : 'Sign In'}</span>
+          </button>
+
+          <div className="login-secure">
+            <Lock size={13} strokeWidth={2.4} />
+            <span>Secure and private access</span>
+          </div>
+        </div>
+
+        <div className="login-visual-panel">
+          <div className="login-visual-scene">
+            <div className="bokeh one" />
+            <div className="bokeh two" />
+            <div className="bokeh three" />
+            <div className="clipboard">
+              <div className="clip" />
+              <div className="paper-lines">
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
+              <div className="pen" />
+              <div className="stethoscope">
+                <span className="chest" />
+                <span className="tube" />
+                <span className="tube second" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PharmacyDashboard() {
+  return (
+    <main className="app-shell">
+      <div className="dashboard-frame">
+        <Sidebar />
+        <section className="content">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+            <h2 style={{ color: '#3d4786', fontWeight: 700, fontSize: '22px' }}>Pharmacy Portal</h2>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => !!localStorage.getItem('carescript-role')
+  );
+  const [role, setRole] = useState(
+    () => localStorage.getItem('carescript-role') || null
+  );
+
+  useEffect(() => {
+    logoutRef.current = () => {
+      localStorage.removeItem('carescript-role');
+      window.history.replaceState({}, '', '/');
+      setIsAuthenticated(false);
+      setRole(null);
+    };
+    return () => {
+      logoutRef.current = null;
+    };
+  }, []);
+
+  const handleLogin = (selectedRole) => {
+    localStorage.setItem('carescript-role', selectedRole);
+    setRole(selectedRole);
+    setIsAuthenticated(true);
+  };
+
+  if (!isAuthenticated) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
+  if (role === 'pharmacy') {
+    return <PharmacyDashboard />;
+  }
+
   const route = window.location.pathname;
 
   if (route === '/patients/new') {
