@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import {
   ChevronDown,
   Check,
+  CheckCircle,
+  ClipboardList,
   ClipboardPlus,
   Eye,
   EyeOff,
@@ -26,6 +28,12 @@ const logoutRef = { current: null };
 const navItems = [
   { label: 'Dashboard', icon: Home, active: true, href: '/' },
   { label: 'Patients', icon: Users, href: '/patients/search' },
+];
+
+const pharmacyNavItems = [
+  { label: 'Dashboard',             icon: Home,          active: true },
+  { label: 'Pending Prescriptions', icon: ClipboardList               },
+  { label: 'Dispensed',             icon: CheckCircle                 },
 ];
 
 function Logo() {
@@ -757,6 +765,81 @@ function ExistingPatientPage() {
   );
 }
 
+function PharmacySidebar({ onLogout }) {
+  return (
+    <aside className="sidebar">
+      <Logo />
+
+      <nav className="nav-list" aria-label="Pharmacy navigation">
+        {pharmacyNavItems.map(({ label, icon: Icon, active }) => (
+          <div className={`nav-item ${active ? 'active' : ''}`} key={label}>
+            <Icon size={21} strokeWidth={active ? 3 : 2.4} />
+            <span>{label}</span>
+          </div>
+        ))}
+      </nav>
+
+      <div className="pharmacy-sidebar-bottom">
+        <div className="pharmacy-profile-card">
+          <div className="avatar teal">PC</div>
+          <div className="doctor-copy">
+            <div className="doctor-row">
+              <strong>PrimeCare Pharmacy</strong>
+              <ChevronDown size={16} strokeWidth={2.6} />
+            </div>
+            <span>Pharmacist</span>
+            <div className="status-row">
+              <span className="online-dot" />
+              <span>Online</span>
+            </div>
+          </div>
+        </div>
+        <button className="pharmacy-signout-btn" type="button" onClick={onLogout}>
+          <LogOut size={15} strokeWidth={2.3} />
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+function PharmacyHero() {
+  return (
+    <header className="pharmacy-hero">
+      <h1 className="pharmacy-hero-title">Hello, Pharmacist 👋</h1>
+      <p className="pharmacy-hero-subtitle">Manage and dispense prescription requests</p>
+    </header>
+  );
+}
+
+function PharmacyPrescriptionTable({ prescriptions = [] }) {
+  return (
+    <section className="rx-table-wrap">
+      <div className="rx-table-header">
+        <h2 className="rx-table-title">Pending Prescriptions</h2>
+        <p className="rx-table-subtitle">Prescriptions waiting to be dispensed</p>
+      </div>
+
+      <div className="rx-table">
+        <div className="rx-table-head">
+          <span>Prescription ID</span>
+          <span>Patient</span>
+          <span>Age / Gender</span>
+          <span>Medications</span>
+          <span>Prescribed On</span>
+          <span>Actions</span>
+        </div>
+
+        {prescriptions.length === 0 && (
+          <div className="rx-empty">
+            <span>No pending prescriptions.</span>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -904,15 +987,14 @@ function LoginScreen({ onLogin }) {
   );
 }
 
-function PharmacyDashboard() {
+function PharmacyDashboard({ onLogout }) {
   return (
     <main className="app-shell">
       <div className="dashboard-frame">
-        <Sidebar />
-        <section className="content">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-            <h2 style={{ color: '#3d4786', fontWeight: 700, fontSize: '22px' }}>Pharmacy Portal</h2>
-          </div>
+        <PharmacySidebar onLogout={onLogout} />
+        <section className="content pharmacy-content">
+          <PharmacyHero />
+          <PharmacyPrescriptionTable prescriptions={[]} />
         </section>
       </div>
     </main>
@@ -927,16 +1009,16 @@ function App() {
     () => localStorage.getItem('carescript-role') || null
   );
 
+  function handleLogout() {
+    localStorage.removeItem('carescript-role');
+    window.history.replaceState({}, '', '/');
+    setIsAuthenticated(false);
+    setRole(null);
+  }
+
   useEffect(() => {
-    logoutRef.current = () => {
-      localStorage.removeItem('carescript-role');
-      window.history.replaceState({}, '', '/');
-      setIsAuthenticated(false);
-      setRole(null);
-    };
-    return () => {
-      logoutRef.current = null;
-    };
+    logoutRef.current = handleLogout;
+    return () => { logoutRef.current = null; };
   }, []);
 
   const handleLogin = (selectedRole) => {
@@ -950,7 +1032,7 @@ function App() {
   }
 
   if (role === 'pharmacy') {
-    return <PharmacyDashboard />;
+    return <PharmacyDashboard onLogout={handleLogout} />;
   }
 
   const route = window.location.pathname;
