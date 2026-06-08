@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   ChevronDown,
   Check,
@@ -446,7 +446,7 @@ function PatientProfile({ patient }) {
     ['Patient Name', patient?.name || 'No patient selected'],
     ['Age', patient?.age || '--'],
     ['Gender', patient?.gender || '--'],
-    ['Visit Count', patient?.visitCount || '--'],
+    ['Visit Count', patient?.visit_count || '--'],
   ];
 
   return (
@@ -476,7 +476,7 @@ function PatientProfile({ patient }) {
   );
 }
 
-function PrescriptionHistory() {
+function PrescriptionHistory({ prescriptions = [], loading = false, error = null }) {
   return (
     <section className="form-card history-card">
       <div className="form-card-heading">
@@ -495,9 +495,36 @@ function PrescriptionHistory() {
           <span>Medications</span>
           <span>Status</span>
         </div>
-        <div className="history-empty">
-          <span>No prescription history available.</span>
-        </div>
+
+        {loading && (
+          <div className="history-empty">
+            <span>Loading prescription history…</span>
+          </div>
+        )}
+
+        {!loading && error && (
+          <div className="history-empty">
+            <span>{error}</span>
+          </div>
+        )}
+
+        {!loading && !error && prescriptions.length === 0 && (
+          <div className="history-empty">
+            <span>No prescription history available.</span>
+          </div>
+        )}
+
+        {!loading && !error && prescriptions.map((rx) => (
+          <div className="history-row" key={rx.prescription_id}>
+            <span>{new Date(rx.created_at).toLocaleDateString()}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+              {rx.medications.map((med, i) => (
+                <span key={i}>{med.name} ({med.dosage}, {med.frequency})</span>
+              ))}
+            </div>
+            <span className={`status-badge ${rx.status}`}>{rx.status}</span>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -593,7 +620,75 @@ function AddNewPatientPage() {
 }
 
 function ExistingPatientPage() {
-  const [found, setFound] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const [patientLoading, setPatientLoading] = useState(false);
+  const [patientError, setPatientError] = useState(null);
+  const [patient, setPatient] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState(null);
+  const [prescriptions, setPrescriptions] = useState([]);
+  const searchGenRef = useRef(0);
+
+  const handleFindPatient = async () => {
+    const patientId = searchInput.trim().toUpperCase();
+
+    if (patientId === '') {
+      setPatientError('Please enter a patient ID.');
+      return;
+    }
+
+    const gen = (searchGenRef.current += 1);
+
+    setPatient(null);
+    setPatientError(null);
+    setPrescriptions([]);
+    setHistoryError(null);
+    setHistoryLoading(false);
+    setPatientLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE}/patients/${patientId}`);
+
+      let data = {};
+      try { data = await response.json(); } catch {}
+
+      if (gen !== searchGenRef.current) return;
+
+      if (!response.ok) {
+        setPatientError(response.status === 404 ? 'Patient not found.' : (data.error || 'Failed to load patient.'));
+        return;
+      }
+
+      setPatient(data);
+      setHistoryLoading(true);
+
+      try {
+        const histResponse = await fetch(`${API_BASE}/prescriptions/patient/${data.patient_id}`);
+
+        let histData = [];
+        try { histData = await histResponse.json(); } catch {}
+
+        if (gen !== searchGenRef.current) return;
+
+        if (!histResponse.ok) {
+          setHistoryError(histData.error || 'Failed to load prescription history.');
+        } else {
+          setPrescriptions(histData);
+        }
+      } catch {
+        if (gen !== searchGenRef.current) return;
+        setHistoryError('Network error loading prescription history.');
+      } finally {
+        if (gen === searchGenRef.current) setHistoryLoading(false);
+      }
+
+    } catch {
+      if (gen !== searchGenRef.current) return;
+      setPatientError('Network error. Please check your connection.');
+    } finally {
+      if (gen === searchGenRef.current) setPatientLoading(false);
+    }
+  };
 
   return (
     <main className="app-shell">
@@ -615,18 +710,30 @@ function ExistingPatientPage() {
 
               <div className="search-row">
                 <Field label="Patient ID">
-                  <input type="text" placeholder="Enter patient ID" />
+                  <input
+                    type="text"
+                    placeholder="Enter patient ID"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                  />
                 </Field>
-                <button className="find-button" type="button" onClick={() => setFound(true)}>
+                <button
+                  className="find-button"
+                  type="button"
+                  onClick={handleFindPatient}
+                  disabled={patientLoading}
+                >
                   <Search size={19} strokeWidth={2.3} />
-                  <span>Find Patient</span>
+                  <span>{patientLoading ? 'Searching…' : 'Find Patient'}</span>
                 </button>
               </div>
+
+              {patientError && <p className="form-error">{patientError}</p>}
             </section>
 
-            {found && <PatientProfile />}
-            {found && <PrescriptionHistory />}
-            {found && <PrescriptionForm title="Add New Prescription" />}
+            {patient && <PatientProfile patient={patient} />}
+            {patient && <PrescriptionHistory prescriptions={prescriptions} loading={historyLoading} error={historyError} />}
+            {patient && <PrescriptionForm patientId={patient.patient_id} title="Add New Prescription" />}
           </div>
         </section>
       </div>
