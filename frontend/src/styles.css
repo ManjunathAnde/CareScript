@@ -874,6 +874,45 @@ a {
   box-shadow: 0 13px 21px rgba(19, 164, 143, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.24);
 }
 
+.form-error {
+  margin: 0 0 16px;
+  padding: 11px 16px;
+  border: 1px solid rgba(210, 65, 55, 0.26);
+  border-radius: 7px;
+  color: #bf3626;
+  background: rgba(255, 236, 233, 0.78);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.form-success {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border: 1px solid rgba(18, 170, 146, 0.26);
+  border-radius: 7px;
+  color: #12aa92;
+  background: rgba(207, 238, 232, 0.52);
+}
+
+.form-success strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #0a8a77;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.form-success span {
+  display: block;
+  color: #2d7066;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
 .success-card {
   min-height: 154px;
   display: flex;

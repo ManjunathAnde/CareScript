@@ -283,8 +283,77 @@ function SuccessSection({ patientId }) {
   );
 }
 
-function PrescriptionForm({ title = 'Add Prescription' }) {
-  const [rows, setRows] = useState([{ id: 1 }]);
+function PrescriptionForm({ patientId, title = 'Add Prescription' }) {
+  const [medications, setMedications] = useState([{ id: crypto.randomUUID(), name: '', dosage: '', frequency: '' }]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [savedPrescription, setSavedPrescription] = useState(null);
+
+  const handleMedicationChange = (id, field, value) => {
+    setSavedPrescription(null);
+    setMedications((current) =>
+      current.map((med) => (med.id === id ? { ...med, [field]: value } : med))
+    );
+  };
+
+  const handleAddRow = () => {
+    setSavedPrescription(null);
+    setMedications((current) => [...current, { id: crypto.randomUUID(), name: '', dosage: '', frequency: '' }]);
+  };
+
+  const handleRemoveRow = (id) => {
+    setSavedPrescription(null);
+    setMedications((current) => current.filter((med) => med.id !== id));
+  };
+
+  const handleSavePrescription = async () => {
+    if (!patientId) {
+      setError('No patient selected.');
+      return;
+    }
+
+    const trimmed = medications.map((med) => ({
+      name: med.name.trim(),
+      dosage: med.dosage.trim(),
+      frequency: med.frequency.trim(),
+    }));
+
+    if (trimmed.some((med) => !med.name || !med.dosage || !med.frequency)) {
+      setError('Every medication must have a name, dosage, and frequency.');
+      return;
+    }
+
+    setSavedPrescription(null);
+    setError(null);
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE}/prescriptions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patient_id: patientId, medications: trimmed }),
+      });
+
+      let data = {};
+      try {
+        data = await response.json();
+      } catch {
+        // response body was not valid JSON
+      }
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to save prescription.');
+        return;
+      }
+
+      setMedications([{ id: crypto.randomUUID(), name: '', dosage: '', frequency: '' }]);
+      setSavedPrescription({ prescription_id: data.prescription_id, status: data.status });
+    } catch {
+      setError('Network error. Please check your connection.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <section className="form-card prescription-card">
@@ -299,23 +368,38 @@ function PrescriptionForm({ title = 'Add Prescription' }) {
       </div>
 
       <div className="medication-list">
-        {rows.map((row, index) => (
-          <div className="medication-row" key={row.id}>
+        {medications.map((med) => (
+          <div className="medication-row" key={med.id}>
             <Field label="Medication Name">
-              <input type="text" placeholder="Enter medication" />
+              <input
+                type="text"
+                placeholder="Enter medication"
+                value={med.name}
+                onChange={(e) => handleMedicationChange(med.id, 'name', e.target.value)}
+              />
             </Field>
             <Field label="Dosage">
-              <input type="text" placeholder="Enter dosage" />
+              <input
+                type="text"
+                placeholder="Enter dosage"
+                value={med.dosage}
+                onChange={(e) => handleMedicationChange(med.id, 'dosage', e.target.value)}
+              />
             </Field>
             <Field label="Frequency">
-              <input type="text" placeholder="Enter frequency" />
+              <input
+                type="text"
+                placeholder="Enter frequency"
+                value={med.frequency}
+                onChange={(e) => handleMedicationChange(med.id, 'frequency', e.target.value)}
+              />
             </Field>
             <button
               className="delete-medication"
               type="button"
               aria-label="Remove medication"
-              disabled={rows.length === 1}
-              onClick={() => setRows((current) => current.filter((item) => item.id !== row.id))}
+              disabled={medications.length === 1}
+              onClick={() => handleRemoveRow(med.id)}
             >
               <Trash2 size={18} strokeWidth={2.1} />
             </button>
@@ -326,15 +410,32 @@ function PrescriptionForm({ title = 'Add Prescription' }) {
       <button
         className="add-medication"
         type="button"
-        onClick={() => setRows((current) => [...current, { id: Date.now() }])}
+        onClick={handleAddRow}
       >
         <Plus size={18} strokeWidth={2.4} />
         <span>Add Another Medication</span>
       </button>
 
-      <button className="wide-button green" type="button">
+      {error && <p className="form-error">{error}</p>}
+
+      {savedPrescription && (
+        <div className="form-success">
+          <Check size={16} strokeWidth={2.8} />
+          <div>
+            <strong>Prescription saved</strong>
+            <span>Sent to pharmacy ✓</span>
+          </div>
+        </div>
+      )}
+
+      <button
+        className="wide-button green"
+        type="button"
+        onClick={handleSavePrescription}
+        disabled={loading}
+      >
         <Save size={17} strokeWidth={2.2} />
-        <span>Save Prescription</span>
+        <span>{loading ? 'Saving...' : 'Save Prescription'}</span>
       </button>
     </section>
   );
@@ -483,7 +584,7 @@ function AddNewPatientPage() {
               error={error}
             />
             {created && <SuccessSection patientId={patientId} />}
-            {created && <PrescriptionForm />}
+            {created && <PrescriptionForm patientId={patientId} />}
           </div>
         </section>
       </div>
