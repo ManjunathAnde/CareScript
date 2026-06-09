@@ -812,7 +812,7 @@ function PharmacyHero() {
   );
 }
 
-function PharmacyPrescriptionTable({ prescriptions = [] }) {
+function PharmacyPrescriptionTable({ prescriptions, loading, error, dispensingIds, dispenseErrors, onDispense, onRetry }) {
   return (
     <section className="rx-table-wrap">
       <div className="rx-table-header">
@@ -824,17 +824,72 @@ function PharmacyPrescriptionTable({ prescriptions = [] }) {
         <div className="rx-table-head">
           <span>Prescription ID</span>
           <span>Patient</span>
-          <span>Age / Gender</span>
+          <span>Age</span>
           <span>Medications</span>
           <span>Prescribed On</span>
           <span>Actions</span>
         </div>
 
-        {prescriptions.length === 0 && (
+        {loading && (
+          <div className="rx-empty">
+            <span>Loading prescriptions…</span>
+          </div>
+        )}
+
+        {!loading && error && (
+          <div className="rx-error">
+            <span>{error}</span>
+            <button className="rx-retry-btn" type="button" onClick={onRetry}>Retry</button>
+          </div>
+        )}
+
+        {!loading && !error && prescriptions.length === 0 && (
           <div className="rx-empty">
             <span>No pending prescriptions.</span>
           </div>
         )}
+
+        {!loading && !error && prescriptions.map((rx) => {
+          const date = new Date(rx.created_at);
+          const dateStr = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+          const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+          const rxShortId = `RX-${rx.prescription_id.slice(0, 8).toUpperCase()}`;
+          const isDispensing = dispensingIds.has(rx.prescription_id);
+
+          return (
+            <div className="rx-table-row" key={rx.prescription_id}>
+              <span className="rx-cell-id">{rxShortId}</span>
+              <div className="rx-cell-patient">
+                <strong>{rx.patient_name || 'Unknown'}</strong>
+                <span>{rx.patient_id || '—'}</span>
+              </div>
+              <span className="rx-cell-age">{rx.patient_age ?? '—'}</span>
+              <div className="rx-cell-meds">
+                {Array.isArray(rx.medications) && rx.medications.map((med, i) => (
+                  <span key={i}>{med.name} {med.dosage} ({med.frequency})</span>
+                ))}
+              </div>
+              <div className="rx-cell-time">
+                <span className="rx-cell-time-date">{dateStr}</span>
+                <span className="rx-cell-time-clock">{timeStr}</span>
+              </div>
+              <div className="rx-cell-actions">
+                {dispenseErrors[rx.prescription_id] && (
+                  <span className="rx-dispense-error">{dispenseErrors[rx.prescription_id]}</span>
+                )}
+                <button
+                  className="dispense-btn"
+                  type="button"
+                  disabled={isDispensing}
+                  onClick={() => onDispense(rx.prescription_id)}
+                >
+                  <PackagePlus size={14} strokeWidth={2.2} />
+                  <span>{isDispensing ? 'Dispensing…' : 'Dispense'}</span>
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
@@ -988,13 +1043,104 @@ function LoginScreen({ onLogin }) {
 }
 
 function PharmacyDashboard({ onLogout }) {
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [dispensingIds, setDispensingIds] = useState(new Set());
+  const [dispenseErrors, setDispenseErrors] = useState({});
+  const isMountedRef = useRef(true);
+  const activeDispensesRef = useRef(0);
+
+  const fetchPending = async (isInitial) => {
+    if (isInitial) setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/prescriptions?status=pending`);
+      let data = [];
+      try { data = await res.json(); } catch {}
+      if (!isMountedRef.current) return;
+      if (res.ok) {
+        setPrescriptions(Array.isArray(data) ? data : []);
+        if (isInitial) setError(null);
+      } else {
+        if (isInitial) setError((data && data.error) || 'Failed to load prescriptions.');
+      }
+    } catch {
+      if (!isMountedRef.current) return;
+      if (isInitial) setError('Network error. Please check your connection.');
+    } finally {
+      if (isMountedRef.current && isInitial) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    fetchPending(true);
+    const interval = setInterval(() => {
+      if (activeDispensesRef.current > 0) return;
+      fetchPending(false);
+    }, 15000);
+    return () => {
+      clearInterval(interval);
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const handleDispense = async (prescriptionId) => {
+    activeDispensesRef.current += 1;
+    setDispensingIds((prev) => {
+      const next = new Set(prev);
+      next.add(prescriptionId);
+      return next;
+    });
+    setDispenseErrors((prev) => {
+      const next = { ...prev };
+      delete next[prescriptionId];
+      return next;
+    });
+    try {
+      const res = await fetch(`${API_BASE}/prescriptions/${prescriptionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'dispensed' }),
+      });
+      let data = {};
+      try { data = await res.json(); } catch {}
+      if (!isMountedRef.current) return;
+      if (res.ok) {
+        setPrescriptions((prev) => prev.filter((rx) => rx.prescription_id !== prescriptionId));
+      } else {
+        setDispenseErrors((prev) => ({ ...prev, [prescriptionId]: data.error || 'Failed to dispense. Please try again.' }));
+      }
+    } catch {
+      if (!isMountedRef.current) return;
+      setDispenseErrors((prev) => ({ ...prev, [prescriptionId]: 'Network error. Please try again.' }));
+    } finally {
+      if (isMountedRef.current) {
+        setDispensingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(prescriptionId);
+          return next;
+        });
+      }
+      activeDispensesRef.current -= 1;
+    }
+  };
+
   return (
     <main className="app-shell">
       <div className="dashboard-frame">
         <PharmacySidebar onLogout={onLogout} />
         <section className="content pharmacy-content">
           <PharmacyHero />
-          <PharmacyPrescriptionTable prescriptions={[]} />
+          <PharmacyPrescriptionTable
+            prescriptions={prescriptions}
+            loading={loading}
+            error={error}
+            dispensingIds={dispensingIds}
+            dispenseErrors={dispenseErrors}
+            onDispense={handleDispense}
+            onRetry={() => fetchPending(true)}
+          />
         </section>
       </div>
     </main>

@@ -1648,3 +1648,147 @@ a {
   font-size: 13px;
   font-weight: 600;
 }
+
+.rx-table-row {
+  display: grid;
+  grid-template-columns: 120px 120px 85px minmax(160px, 1fr) 135px 105px;
+  column-gap: 12px;
+  align-items: start;
+  padding: 14px 20px;
+  border: 1px solid rgba(188, 203, 236, 0.7);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.58);
+  font-size: 13px;
+  color: #11194d;
+}
+
+.rx-cell-id {
+  font-size: 12px;
+  font-weight: 800;
+  color: #26306f;
+  font-family: ui-monospace, monospace;
+  padding-top: 2px;
+}
+
+.rx-cell-patient {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rx-cell-patient strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: #080d3f;
+}
+
+.rx-cell-patient span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6273ab;
+}
+
+.rx-cell-age {
+  font-size: 13px;
+  font-weight: 700;
+  color: #11194d;
+  padding-top: 2px;
+}
+
+.rx-cell-meds {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rx-cell-meds span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #283372;
+  line-height: 1.4;
+}
+
+.rx-cell-time {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rx-cell-time-date {
+  font-size: 12px;
+  font-weight: 700;
+  color: #11194d;
+}
+
+.rx-cell-time-clock {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6273ab;
+}
+
+.rx-cell-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.dispense-btn {
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 7px;
+  color: white;
+  background: linear-gradient(135deg, #6d5af7, #553be4);
+  box-shadow: 0 6px 14px rgba(54, 46, 184, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dispense-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.rx-dispense-error {
+  font-size: 11px;
+  font-weight: 600;
+  color: #bf3626;
+  line-height: 1.4;
+}
+
+.rx-error {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  border: 1px dashed rgba(210, 65, 55, 0.32);
+  border-radius: 8px;
+  color: #bf3626;
+  background: rgba(255, 236, 233, 0.5);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rx-retry-btn {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid rgba(210, 65, 55, 0.4);
+  border-radius: 7px;
+  color: #bf3626;
+  background: rgba(255, 255, 255, 0.7);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
