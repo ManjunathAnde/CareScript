@@ -1181,7 +1181,7 @@ function App() {
     return <PharmacyDashboard onLogout={handleLogout} />;
   }
 
-  const route = window.location.pathname;
+  const route = window.location.pathname.replace(/\/$/, '') || '/';
 
   if (route === '/patients/new') {
     return <AddNewPatientPage />;
