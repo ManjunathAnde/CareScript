@@ -1140,7 +1140,7 @@ function PharmacyDashboard({ onLogout }) {
     };
   }, []);
 
-  const handleDispense = async (prescriptionId) => {
+  const handleDispense = async (prescriptionId, email = '') => {
     activeDispensesRef.current += 1;
     setDispensingIds((prev) => {
       const next = new Set(prev);
@@ -1156,7 +1156,7 @@ function PharmacyDashboard({ onLogout }) {
       const res = await fetch(`${API_BASE}/prescriptions/${prescriptionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'dispensed' }),
+        body: JSON.stringify({ status: 'dispensed', email }),
       });
       let data = {};
       try { data = await res.json(); } catch {}
@@ -1195,7 +1195,7 @@ function PharmacyDashboard({ onLogout }) {
 
   const handleConfirmDispense = async () => {
     console.log(emailAddress);
-    const succeeded = await handleDispense(selectedPrescription.prescription_id);
+    const succeeded = await handleDispense(selectedPrescription.prescription_id, emailAddress);
     if (succeeded) {
       setSelectedPrescription(null);
       setEmailAddress('');
