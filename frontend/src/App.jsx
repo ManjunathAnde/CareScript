@@ -812,7 +812,60 @@ function PharmacyHero() {
   );
 }
 
-function PharmacyPrescriptionTable({ prescriptions, loading, error, dispensingIds, dispenseErrors, onDispense, onRetry }) {
+function DispenseConfirmModal({ prescription, emailAddress, onEmailChange, onConfirm, onCancel, isDispensing }) {
+  if (!prescription) return null;
+  const rxShortId = `RX-${prescription.prescription_id.slice(0, 8).toUpperCase()}`;
+  return (
+    <div className="dispense-modal-overlay">
+      <div className="dispense-modal">
+        <div className="dispense-modal-header">
+          <h2 className="dispense-modal-title">Confirm Dispense</h2>
+        </div>
+        <div className="dispense-modal-body">
+          <div className="dispense-modal-patient">
+            <div className="dispense-modal-row">
+              <span className="dispense-modal-label">Patient Name</span>
+              <span className="dispense-modal-value">{prescription.patient_name || '—'}</span>
+            </div>
+            <div className="dispense-modal-row">
+              <span className="dispense-modal-label">Patient ID</span>
+              <span className="dispense-modal-value">{prescription.patient_id || '—'}</span>
+            </div>
+            <div className="dispense-modal-row">
+              <span className="dispense-modal-label">Prescription ID</span>
+              <span className="dispense-modal-value">{rxShortId}</span>
+            </div>
+          </div>
+          <div className="dispense-modal-phone">
+            <label htmlFor="modal-email">Patient Email (Optional)</label>
+            <input
+              id="modal-email"
+              type="email"
+              placeholder="patient@example.com"
+              value={emailAddress}
+              onChange={(e) => onEmailChange(e.target.value)}
+            />
+          </div>
+          <div className="dispense-modal-actions">
+            <button className="modal-cancel-btn" type="button" onClick={onCancel}>
+              Cancel
+            </button>
+            <button
+              className="modal-confirm-btn"
+              type="button"
+              onClick={onConfirm}
+              disabled={isDispensing}
+            >
+              {isDispensing ? 'Dispensing…' : 'Confirm Dispense'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PharmacyPrescriptionTable({ prescriptions, loading, error, dispensingIds, dispenseErrors, onSelectDispense, onRetry }) {
   return (
     <section className="rx-table-wrap">
       <div className="rx-table-header">
@@ -881,7 +934,7 @@ function PharmacyPrescriptionTable({ prescriptions, loading, error, dispensingId
                   className="dispense-btn"
                   type="button"
                   disabled={isDispensing}
-                  onClick={() => onDispense(rx.prescription_id)}
+                  onClick={() => onSelectDispense(rx)}
                 >
                   <PackagePlus size={14} strokeWidth={2.2} />
                   <span>{isDispensing ? 'Dispensing…' : 'Dispense'}</span>
@@ -1048,6 +1101,8 @@ function PharmacyDashboard({ onLogout }) {
   const [error, setError] = useState(null);
   const [dispensingIds, setDispensingIds] = useState(new Set());
   const [dispenseErrors, setDispenseErrors] = useState({});
+  const [selectedPrescription, setSelectedPrescription] = useState(null);
+  const [emailAddress, setEmailAddress] = useState('');
   const isMountedRef = useRef(true);
   const activeDispensesRef = useRef(0);
 
@@ -1108,12 +1163,15 @@ function PharmacyDashboard({ onLogout }) {
       if (!isMountedRef.current) return;
       if (res.ok) {
         setPrescriptions((prev) => prev.filter((rx) => rx.prescription_id !== prescriptionId));
+        return true;
       } else {
         setDispenseErrors((prev) => ({ ...prev, [prescriptionId]: data.error || 'Failed to dispense. Please try again.' }));
+        return false;
       }
     } catch {
       if (!isMountedRef.current) return;
       setDispenseErrors((prev) => ({ ...prev, [prescriptionId]: 'Network error. Please try again.' }));
+      return false;
     } finally {
       if (isMountedRef.current) {
         setDispensingIds((prev) => {
@@ -1126,19 +1184,45 @@ function PharmacyDashboard({ onLogout }) {
     }
   };
 
+  const handleOpenModal = (rx) => {
+    setSelectedPrescription(rx);
+  };
+
+  const handleCancelModal = () => {
+    setSelectedPrescription(null);
+    setEmailAddress('');
+  };
+
+  const handleConfirmDispense = async () => {
+    console.log(emailAddress);
+    const succeeded = await handleDispense(selectedPrescription.prescription_id);
+    if (succeeded) {
+      setSelectedPrescription(null);
+      setEmailAddress('');
+    }
+  };
+
   return (
     <main className="app-shell">
       <div className="dashboard-frame">
         <PharmacySidebar onLogout={onLogout} />
         <section className="content pharmacy-content">
           <PharmacyHero />
+          <DispenseConfirmModal
+            prescription={selectedPrescription}
+            emailAddress={emailAddress}
+            onEmailChange={setEmailAddress}
+            onConfirm={handleConfirmDispense}
+            onCancel={handleCancelModal}
+            isDispensing={selectedPrescription ? dispensingIds.has(selectedPrescription.prescription_id) : false}
+          />
           <PharmacyPrescriptionTable
             prescriptions={prescriptions}
             loading={loading}
             error={error}
             dispensingIds={dispensingIds}
             dispenseErrors={dispenseErrors}
-            onDispense={handleDispense}
+            onSelectDispense={handleOpenModal}
             onRetry={() => fetchPending(true)}
           />
         </section>

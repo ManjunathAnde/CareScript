@@ -1792,3 +1792,153 @@ a {
   font-weight: 700;
   cursor: pointer;
 }
+
+/* ── Dispense Confirmation Modal ─────────────────────────────────── */
+
+.dispense-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 13, 63, 0.38);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dispense-modal {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(192, 206, 235, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(8, 13, 63, 0.18), 0 4px 16px rgba(109, 90, 247, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  min-width: 420px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.dispense-modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(192, 206, 235, 0.7);
+}
+
+.dispense-modal-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #080d3f;
+  margin: 0;
+}
+
+.dispense-modal-body {
+  padding: 20px 24px 24px;
+}
+
+.dispense-modal-patient {
+  background: rgba(237, 241, 255, 0.6);
+  border: 1px solid rgba(192, 206, 235, 0.6);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dispense-modal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.dispense-modal-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a568f;
+}
+
+.dispense-modal-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #080d3f;
+}
+
+.dispense-modal-phone {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.dispense-modal-phone label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #12194d;
+}
+
+.dispense-modal-phone input {
+  height: 42px;
+  padding: 0 14px;
+  border: 1.5px solid rgba(188, 203, 236, 0.92);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.8);
+  font: inherit;
+  font-size: 14px;
+  color: #080d3f;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.dispense-modal-phone input:focus {
+  border-color: rgba(109, 90, 247, 0.6);
+}
+
+.dispense-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.modal-cancel-btn {
+  height: 44px;
+  padding: 0 20px;
+  border: 1.5px solid rgba(188, 203, 236, 0.92);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #3d4786;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.modal-cancel-btn:hover {
+  background: rgba(255, 236, 233, 0.7);
+  border-color: rgba(210, 65, 55, 0.35);
+  color: #bf3626;
+}
+
+.modal-confirm-btn {
+  height: 44px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #6d5af7, #553be4);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.modal-confirm-btn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.modal-confirm-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
