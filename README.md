@@ -12,26 +12,44 @@
 
 ---
 
+
 ## 🎯 The Problem
 
-Small clinics in India run prescription workflows entirely on paper. The consequences are felt by everyone involved.
+Many small clinics in India still rely on paper-based prescription workflows. What appears simple on the surface creates communication gaps, operational inefficiencies, and patient safety risks across the entire care journey.
 
-### 🧑‍⚕️ Patients cannot read their own prescriptions
-Medical abbreviations, handwritten dosage instructions, and clinical shorthand leave patients uncertain about what they are taking and why. This gap in awareness leads to incorrect self-medication, missed doses, and avoidable follow-up visits that clog the queue further.
+### 🧑‍⚕️ Patients struggle to understand prescriptions
 
-### 📄 Lost prescriptions create clinical risk
-Elderly patients and those managing chronic conditions frequently misplace physical prescriptions. Without a digital record, they cannot accurately recall their medication history when consulting a doctor months later. For patients on long-term medication, this is not an inconvenience but a genuine safety concern.
+Handwritten instructions, abbreviations, and clinical shorthand often leave patients unsure about what they are taking and why. Handwritten prescriptions have been reported to carry an error rate of **35.7%**, compared to **2.5%** for electronic prescriptions.
 
-### 👨‍⚕️ The doctor has no visibility after the consultation ends
-Once a prescription leaves the room, the doctor has no way of knowing whether it was dispensed, delayed, or lost entirely. There is no feedback loop between consultation and pharmacy.
+> *Journal of Drug Delivery and Therapeutics, 2024*
 
-### 📊 Clinic and pharmacy owners have no transaction record
-Dispensing activity is untracked. There is no record of what was dispensed, when, or to whom, making inventory management, billing reconciliation, and any form of business reporting impossible.
+### 📄 Lost prescriptions disrupt continuity of care
 
-### 📧 Patients receive no notification when medicines are ready
-A patient who has been waiting has no way of knowing their prescription status. They either wait indefinitely at the counter or make an unnecessary return visit.
+Patients frequently misplace paper prescriptions, making it difficult to recall medication history during future consultations. Prescription completeness in Indian outpatient settings has been reported as low as **52%**, creating gaps even before records are lost.
 
-CareScript digitizes this entire workflow in a single connected platform, from patient registration to prescription creation to pharmacy dispensing to patient email notification.
+> *International Journal of Basic and Clinical Pharmacology, 2025*
+
+### 👨‍⚕️ Doctors lose visibility after the consultation
+
+Once a prescription leaves the clinic, doctors have no way to know whether it was dispensed, delayed, or never collected. More than **80%** of Indian healthcare facilities still operate in disconnected data environments.
+
+> *Ayushman Bharat Digital Mission, 2025*
+
+### 📊 Clinics lack reliable dispensing records
+
+Without digital tracking, clinics and pharmacies struggle with inventory monitoring, reconciliation, and reporting. Only **20%** of healthcare providers have adopted digital systems across core operational workflows.
+
+> *Ayushman Bharat Digital Mission, 2025*
+
+### 📧 Patients receive no status updates
+
+Patients often have no visibility into when their medications are ready, leading to unnecessary waiting and repeat visits. Research has shown a direct relationship between pharmacy wait times and patient satisfaction.
+
+> *National Journal of Physiology, Pharmacy and Pharmacology, 2018*
+
+---
+
+CareScript digitizes the entire prescription lifecycle, connecting doctors, pharmacies, and patients through a single real-time platform.
 
 ---
 
