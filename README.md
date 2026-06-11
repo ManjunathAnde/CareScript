@@ -2,7 +2,7 @@
 
 > A serverless AWS platform that connects doctors, pharmacists, and patients, replacing paper-based prescription workflows with a real-time digital system.
 
-🔗 **[Live link ](https://main.dy43b2jej051.amplifyapp.com)** | **[GitHub](https://github.com/ManjunathAnde/CareScript)**
+🔗 **[Live link ](https://main.dy43b2jej051.amplifyapp.com)** | **[GitHub](https://github.com/ManjunathAnde/CareScript)** | **[LinkedIn](https://www.linkedin.com/in/manjunath-ande/)**
 
 **Demo Credentials**
 | Role | Username | Password |
@@ -208,4 +208,4 @@ Without this item, patient creation will fail as the Lambda has nothing to incre
 
 ---
 
-*Built by Manjunath Ande · [LinkedIn](https://linkedin.com/in/manjunathande) · [GitHub](https://github.com/ManjunathAnde)*
+*Built by Manjunath Ande · [LinkedIn](https://www.linkedin.com/in/manjunath-ande/) · [GitHub](https://github.com/ManjunathAnde)*
