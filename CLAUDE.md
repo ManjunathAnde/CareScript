@@ -1,4 +1,4 @@
-# CLAUDE.md — Clinic Prescription Coordination Platform
+#Clinic Prescription Coordination Platform
 
 ## CRITICAL: Source of Truth
 blueprint.md is the authoritative specification.
