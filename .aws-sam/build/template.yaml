@@ -176,6 +176,9 @@ Resources:
     Properties:
       CodeUri: MarkDispensedFunction
       Handler: index.handler
+      Environment:
+        Variables:
+          SES_FROM_EMAIL: carescript.notify@gmail.com
       Events:
         MarkDispensed:
           Type: Api
@@ -188,6 +191,12 @@ Resources:
       - DynamoDBCrudPolicy:
           TableName:
             Ref: PrescriptionsTable
+      - Statement:
+        - Effect: Allow
+          Action:
+          - ses:SendEmail
+          - ses:SendRawEmail
+          Resource: '*'
     Metadata:
       SamResourceId: MarkDispensedFunction
 Outputs:
