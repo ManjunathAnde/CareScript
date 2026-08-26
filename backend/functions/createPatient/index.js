@@ -12,7 +12,7 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json',
 };
 
-function respond(statusCode, body) {
+function respond(statusCode, body) { //formatting HTTP requests
   return {
     statusCode,
     headers: CORS_HEADERS,
@@ -20,10 +20,11 @@ function respond(statusCode, body) {
   };
 }
 
-function formatPatientId(num) {
+function formatPatientId(num) { //formatting final Patient ID with hardcoded "WXXX"
   return 'W' + String(num).padStart(3, '0');
 }
-
+ //The incoming HTTP request is stored in 'body variable'.
+ // If it is empty or invalid JSON, the error is handled
 exports.handler = async (event) => {
   let body;
   try {
@@ -32,7 +33,7 @@ exports.handler = async (event) => {
     return respond(400, { error: 'Invalid request body' });
   }
 
-  const { name, age, gender } = body;
+  const { name, age, gender } = body; //input fields validatoin
 
   if (!name || typeof name !== 'string' || name.trim() === '') {
     return respond(400, { error: 'name is required' });
@@ -44,6 +45,8 @@ exports.handler = async (event) => {
     return respond(400, { error: 'gender must be Male, Female, or Other' });
   }
 
+
+  //Updating the counter and increasing by one as a new patient is created
   try {
     const counterResult = await docClient.send(new UpdateCommand({
       TableName: TABLE,
@@ -54,7 +57,7 @@ exports.handler = async (event) => {
     }));
 
     const patientId = formatPatientId(counterResult.Attributes.last_id);
-    const createdAt = new Date().toISOString();
+    const createdAt = new Date().toISOString(); //timestamp of patient creation
 
     const item = {
       patient_id: patientId,
@@ -68,11 +71,11 @@ exports.handler = async (event) => {
     await docClient.send(new PutCommand({
       TableName: TABLE,
       Item: item,
-    }));
+    })); //putting new patient in the table
 
     return respond(201, item);
   } catch (err) {
     console.error(err);
     return respond(500, { error: 'Internal server error' });
-  }
+  } //error hadndling
 };
