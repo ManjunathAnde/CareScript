@@ -49,10 +49,10 @@ async function handlePatientHistory(rawPatientId) {
   try {
     const result = await docClient.send(new QueryCommand({
       TableName: PRESCRIPTIONS_TABLE,
-      IndexName: 'PatientIndex',
-      KeyConditionExpression: 'patient_id = :pid',
+      IndexName: 'PatientIndex', //search by GSI
+      KeyConditionExpression: 'patient_id = :pid', //get all entries where patient_id is pid
       ExpressionAttributeValues: { ':pid': patientId },
-      ScanIndexForward: false,
+      ScanIndexForward: false, //newest entries first
     }));
 
     return respond(200, result.Items || []);
@@ -74,7 +74,7 @@ async function handleStatusQuery(status) {
       KeyConditionExpression: '#s = :status',
       ExpressionAttributeNames: { '#s': 'status' },
       ExpressionAttributeValues: { ':status': status },
-      ScanIndexForward: false,
+      ScanIndexForward: false, 
     }));
 
     return respond(200, result.Items || []);
