@@ -1,5 +1,5 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, GetCommand } = require('@aws-sdk/lib-dynamodb');
+const { DynamoDBDocumentClient, GetCommand } = require('@aws-sdk/lib-dynamodb'); //Used for DynamoDB's data format abstraction
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
