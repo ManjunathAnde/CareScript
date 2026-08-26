@@ -55,7 +55,7 @@ async function handlePatientHistory(rawPatientId) {
       ScanIndexForward: false, //newest entries first
     }));
 
-    return respond(200, result.Items || []);
+    return respond(200, result.Items || []); //return array or empty collection
   } catch (err) {
     console.error(err);
     return respond(500, { error: 'Internal server error' });

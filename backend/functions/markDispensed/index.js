@@ -4,7 +4,7 @@ const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
-const sesClient = new SESClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const sesClient = new SESClient({ region: process.env.AWS_REGION || 'us-east-1' }); //default to us-east-1 region
 
 const PRESCRIPTIONS_TABLE = process.env.PRESCRIPTIONS_TABLE;
 const SES_FROM_EMAIL = process.env.SES_FROM_EMAIL;
