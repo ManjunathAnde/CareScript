@@ -23,10 +23,10 @@ function respond(statusCode, body) {
   };
 }
 
-function buildEmailBody(item) {
+function buildEmailBody(item) { //turning prescription to formatted email
   const medLines = Array.isArray(item.medications)
     ? item.medications.map((m) => `  • ${m.name} ${m.dosage} (${m.frequency})`).join('\n')
-    : '  (no medications listed)';
+    : '  (no medications listed)'; //ternary in case of no medications
 
   return [
     `Dear ${item.patient_name},`,
@@ -96,7 +96,7 @@ exports.handler = async (event) => {
       TableName: PRESCRIPTIONS_TABLE,
       Key: { prescription_id: prescriptionId },
       UpdateExpression: 'SET #s = :dispensed',
-      ConditionExpression: 'attribute_exists(prescription_id) AND #s = :pending',
+      ConditionExpression: 'attribute_exists(prescription_id) AND #s = :pending',//perform update only when row with precription id exists and its status is pending. This check is an indivisble operation
       ExpressionAttributeNames: { '#s': 'status' },
       ExpressionAttributeValues: {
         ':dispensed': 'dispensed',
@@ -105,7 +105,7 @@ exports.handler = async (event) => {
       ReturnValues: 'ALL_NEW',
     }));
 
-    if (recipientEmail) {
+    if (recipientEmail) { //whole block skipped if no email
       try {
         await sesClient.send(new SendEmailCommand({
           Source: `CareScript Notifications <${SES_FROM_EMAIL}>`,
@@ -135,7 +135,7 @@ exports.handler = async (event) => {
       status: 'dispensed',
     });
 
-  } catch (err) {
+  } catch (err) { //Helps find the specific error which caused the failure of our conditional check which is a combination of two indivisble conditions
     if (err.name === 'ConditionalCheckFailedException') {
       try {
         const lookup = await docClient.send(new GetCommand({
