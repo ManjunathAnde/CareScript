@@ -29,13 +29,13 @@ exports.handler = async (event) => {
 
   if (id === 'COUNTER') {
     return respond(404, { error: 'Patient not found' });
-  }
+  } //To prevent calling COUNTER item as a patient
 
   try {
     const result = await docClient.send(new GetCommand({
       TableName: TABLE,
       Key: { patient_id: id },
-    }));
+    })); 
 
     if (!result.Item) {
       return respond(404, { error: 'Patient not found' });
