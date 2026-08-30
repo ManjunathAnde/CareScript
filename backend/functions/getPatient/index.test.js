@@ -11,12 +11,12 @@ beforeEach(() => { // Before each test, reset any previous test configurations
   ddbMock.reset();
 });
 
-test('returns patient when found', async () => {
-  ddbMock.on(GetCommand).resolves({
+test('returns patient when found', async () => { //String label {name of the test}
+  ddbMock.on(GetCommand).resolves({ //Do not access real DynamoDB. Intercept and hand this response
     Item: { patient_id: 'W001', name: 'John', age: 30, gender: 'Male', visit_count: 2 },
   });
 
-  const result = await handler({
+  const result = await handler({ //calling the handler function with a demo path parameter
     pathParameters: { id: 'W001' },
   });
 
