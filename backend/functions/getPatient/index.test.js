@@ -1,13 +1,13 @@
-process.env.PATIENTS_TABLE = 'test-patients-table';
+process.env.PATIENTS_TABLE = 'test-patients-table'; //Fake value for table reference
 
-const { mockClient } = require('aws-sdk-client-mock');
+const { mockClient } = require('aws-sdk-client-mock'); //Mock to intercept functions calling real AWS resources
 const { DynamoDBDocumentClient, GetCommand } = require('@aws-sdk/lib-dynamodb');
 
 const ddbMock = mockClient(DynamoDBDocumentClient);
 
-const { handler } = require('./index');
+const { handler } = require('./index'); //unmodified lambda function which is being tested
 
-beforeEach(() => {
+beforeEach(() => { // Before each test, reset any previous test configurations
   ddbMock.reset();
 });
 
