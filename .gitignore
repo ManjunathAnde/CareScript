@@ -1,2 +1,4 @@
 CLAUDE.md
 PROGRESS.md
+node_modules/
+.aws-sam/
