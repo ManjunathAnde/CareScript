@@ -37,23 +37,13 @@ Two dashboards — Doctor and Pharmacy — connected through a shared DynamoDB b
 * Doctor Portal
 * Pharmacy Portal
 * Backend (Lambda + API Gateway + DynamoDB)
-* Auth (Clerk — Doctor and Pharmacy roles)
 * AWS deployment via Amplify
-
-### Deferred
-
-* Patient Portal
-* Multi-doctor support
-* Multi-clinic support
-* QR-based lookup
-* SMS notifications
 
 ---
 
 ## Tech Stack
 
 * Backend: AWS Lambda + API Gateway + DynamoDB
-* Auth: Clerk (Doctor and Pharmacy roles)
 * Frontend: React (single application, two role-based views)
 * Hosting: AWS Amplify
 * Infrastructure as Code: AWS SAM
@@ -234,7 +224,7 @@ Used by pharmacy polling workflow.
 
 Marks prescription as dispensed.
 
-Only Pharmacy role may call this endpoint.
+Only Pharmacy role may call this endpoint. Conditional atomic Update only if status is pending
 
 #### Request
 
@@ -374,8 +364,7 @@ Sorted newest first.
 ## Key Architecture Decisions
 
 | Decision         | Choice      | Reason                                         |
-| ---------------- | ----------- | ---------------------------------------------- |
-| Auth             | Clerk       | Faster delivery within 10-day sprint           |
+| ---------------- | ----------- | ---------------------------------------------- |        |
 | Sync             | Polling     | Workflow does not require real-time WebSockets |
 | Database         | DynamoDB    | Fully serverless architecture                  |
 | IaC              | AWS SAM     | Repeatable infrastructure deployment           |
@@ -419,12 +408,4 @@ Sorted newest first.
 * No RDS
 * No WebSockets
 * No DynamoDB Streams
-* No patient portal in Phase 1
-* No SMS notifications
-* No mobile number collection
-* No complaints field
-* No multi-clinic support
-* No inventory management
-* No billing system
-* No TypeScript
-* No separate doctor and pharmacy frontend applications
+
