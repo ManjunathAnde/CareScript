@@ -10,7 +10,7 @@ const sesMock = mockClient(SESClient);
 
 const { handler } = require('./index');
 
-beforeEach(() => {
+beforeEach(() => { //Resets configurations before each test
   ddbMock.reset();
   sesMock.reset();
 });
