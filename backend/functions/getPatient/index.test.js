@@ -25,8 +25,8 @@ test('returns patient when found', async () => { //String label {name of the tes
 
   expect(result.statusCode).toBe(200); //Handler should return HTTP status 200 : happypath
   const patient = JSON.parse(result.body);
-  expect(patient.patient_id).toBe('W001'); //Patient id 
-  expect(patient.visit_count).toBe(2);
+  expect(patient.patient_id).toBe('W001'); //Confirms handler doesn't alter mocked patient_id
+  expect(patient.visit_count).toBe(2); //Confirms handler doesn't alter mocked visit_count
 });
 
 test('rejects missing id', async () => {
