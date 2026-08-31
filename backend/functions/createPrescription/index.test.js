@@ -85,3 +85,9 @@ test('returns 500 with conflict message if transaction is cancelled', async () =
   expect(body.error).toBe('Prescription could not be created due to a conflict');
 });//The response should match the handled exception message in the handler code and return 500
 
+test('treats COUNTER as not found', async () => {
+  const result = await handler({
+    body: JSON.stringify({ patient_id: 'COUNTER', medications: validMedications }),
+  });
+  expect(result.statusCode).toBe(404);
+});
