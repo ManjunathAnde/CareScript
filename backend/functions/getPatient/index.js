@@ -1,4 +1,4 @@
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb'); //Low-level connection to DynamoDB
 const { DynamoDBDocumentClient, GetCommand } = require('@aws-sdk/lib-dynamodb'); //Used for DynamoDB's data format abstraction
 
 const client = new DynamoDBClient({});
@@ -21,7 +21,7 @@ function respond(statusCode, body) {
 }
 
 exports.handler = async (event) => {
-  const id = event.pathParameters && event.pathParameters.id;
+  const id = event.pathParameters && event.pathParameters.id; //Extracting path parameter from HTTP request 
 
   if (!id) {
     return respond(400, { error: 'Patient ID is required' });
@@ -35,7 +35,7 @@ exports.handler = async (event) => {
     const result = await docClient.send(new GetCommand({
       TableName: TABLE,
       Key: { patient_id: id },
-    })); 
+    }));  //Get Command to fetch details by patient_id
 
     if (!result.Item) {
       return respond(404, { error: 'Patient not found' });
