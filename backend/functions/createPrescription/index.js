@@ -1,4 +1,4 @@
-const { randomUUID } = require('crypto');
+const { randomUUID } = require('crypto'); //UUID generation
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, GetCommand, TransactWriteCommand } = require('@aws-sdk/lib-dynamodb');
 
@@ -14,7 +14,7 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json',
 };
 
-function respond(statusCode, body) {
+function respond(statusCode, body) { //HTTP request formatting.
   return {
     statusCode,
     headers: CORS_HEADERS,
@@ -22,9 +22,9 @@ function respond(statusCode, body) {
   };
 }
 
-function isValidMedication(med) {
+function isValidMedication(med) { //Check for valid medication
   return (
-    med !== null &&
+    med !== null && //Checking for vaid object with string non-empty inputs
     typeof med === 'object' &&
     !Array.isArray(med) &&
     typeof med.name === 'string' && med.name.trim() !== '' &&
@@ -38,26 +38,26 @@ exports.handler = async (event) => {
   try {
     body = JSON.parse(event.body || '{}');
   } catch {
-    return respond(400, { error: 'Invalid request body' });
+    return respond(400, { error: 'Invalid request body' }); //If empty, invalid request body
   }
 
   const { patient_id, medications } = body;
 
   if (!patient_id || typeof patient_id !== 'string' || patient_id.trim() === '') {
-    return respond(400, { error: 'patient_id is required' });
+    return respond(400, { error: 'patient_id is required' }); //Check for patient_id
   }
 
-  const normalizedPatientId = patient_id.trim();
+  const normalizedPatientId = patient_id.trim(); 
 
   if (normalizedPatientId === 'COUNTER') {
-    return respond(404, { error: 'Patient not found' });
+    return respond(404, { error: 'Patient not found' }); //Patient_id should not be counter
   }
 
-  if (!Array.isArray(medications) || medications.length === 0) {
+  if (!Array.isArray(medications) || medications.length === 0) { //Checking for array
     return respond(400, { error: 'medications must be a non-empty array' });
-  }
+  } 
 
-  if (!medications.every(isValidMedication)) {
+  if (!medications.every(isValidMedication)) { //Validates against each medication in the array
     return respond(400, { error: 'Each medication must have name, dosage, and frequency' });
   }
 
@@ -101,8 +101,10 @@ exports.handler = async (event) => {
             ConditionExpression: 'attribute_exists(patient_id)',
           },
         },
-      ],
+      ], 
     }));
+//A transaction which performs putting in new prescription and increasing visit count
+//as two indivisible operations on condition that prescription_id exists while insertion.
 
     return respond(201, {
       prescription_id: prescriptionId,
