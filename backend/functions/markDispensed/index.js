@@ -75,7 +75,7 @@ exports.handler = async (event) => {
 
   if (!prescriptionId) {
     return respond(400, { error: 'prescription_id is required' });
-  }
+  } //prescription_id for marking
 
   let body;
   try {
@@ -89,10 +89,10 @@ exports.handler = async (event) => {
 
   if (status !== 'dispensed') {
     return respond(400, { error: 'status must be dispensed' });
-  }
+  } //Checking the status change call in HTTP request
 
   try {
-    const result = await docClient.send(new UpdateCommand({
+    const result = await docClient.send(new UpdateCommand({ //UpdateCommand enforcing atomicity.
       TableName: PRESCRIPTIONS_TABLE,
       Key: { prescription_id: prescriptionId },
       UpdateExpression: 'SET #s = :dispensed',
