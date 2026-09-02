@@ -2,6 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Clinic Prescription Coordination Platform
 
+#BUSINESS INVARIANT---
 # DELETION POLICY: No DELETE API endpoints exist in this system.
 # Records are never deleted by application workflow.
 # Although some SAM managed policies include DeleteItem permissions,
@@ -135,7 +136,7 @@ Resources:
         - Statement:
             - Effect: Allow
               Action:
-                - dynamodb:TransactWriteItems
+                - dynamodb:TransactWriteItems #Enforcing atomicity using transactions
               Resource:
                 - !GetAtt PrescriptionsTable.Arn
                 - !GetAtt PatientsTable.Arn
