@@ -20,7 +20,7 @@ function respond(statusCode, body) {
   };
 }
 
-exports.handler = async (event) => {
+exports.handler = async (event) => { //Short circuit evaluation of path paramter and query status
   const pathPatientId = event.pathParameters && event.pathParameters.patient_id;
   const queryStatus = event.queryStringParameters && event.queryStringParameters.status;
 
@@ -36,12 +36,12 @@ exports.handler = async (event) => {
 };
 
 async function handlePatientHistory(rawPatientId) {
-  const patientId = rawPatientId.trim();
+  const patientId = rawPatientId.trim(); //Doctor-side function
 
   if (!patientId) {
     return respond(400, { error: 'patient_id is required' });
   }
-
+//Handling missing patient_id and COUNTER as patient_id
   if (patientId === 'COUNTER') {
     return respond(404, { error: 'Patient not found' });
   }
@@ -62,7 +62,7 @@ async function handlePatientHistory(rawPatientId) {
   }
 }
 
-async function handleStatusQuery(status) {
+async function handleStatusQuery(status) { //Pharmacy side function
   if (status !== 'pending' && status !== 'dispensed') {
     return respond(400, { error: 'status must be pending or dispensed' });
   }
@@ -72,8 +72,8 @@ async function handleStatusQuery(status) {
       TableName: PRESCRIPTIONS_TABLE,
       IndexName: 'StatusIndex',
       KeyConditionExpression: '#s = :status',
-      ExpressionAttributeNames: { '#s': 'status' },
-      ExpressionAttributeValues: { ':status': status },
+      ExpressionAttributeNames: { '#s': 'status' }, //Status is a reserved keyword
+      ExpressionAttributeValues: { ':status': status }, 
       ScanIndexForward: false, 
     }));
 
